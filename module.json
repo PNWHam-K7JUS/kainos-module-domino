@@ -1,0 +1,12 @@
+{
+  "id": "domino",
+  "name": "DominoEX / THOR",
+  "description": "DominoEX and THOR keyboard chat inside Kainos: every speed from Micro to DominoEX 88 and THOR 100, compatible with fldigi. Incremental frequency keying rides through drift and fading; THOR adds error correction. Click a signal on the waterfall to read it; type to send, with F1 - F8 messages, and log the QSO.",
+  "version": "0.1.0",
+  "api": 1,
+  "minKainos": "1.0.12",
+  "entry": "Kainos.Domino.dll",
+  "author": "Justin Cron K7JUS",
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/PNWHam-K7JUS/kainos-module-domino"
+}
