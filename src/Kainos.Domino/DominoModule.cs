@@ -1,4 +1,4 @@
-/*  DominoModule.cs
+﻿/*  DominoModule.cs
 
 Kainos DominoEX / THOR: DominoEX and THOR keyboard chat inside Kainos, as a downloadable module (Setup > Modules).
 Reads the signal clicked on the waterfall, and sends what's typed and the F1 - F8 messages. Works with fldigi.
@@ -44,7 +44,7 @@ namespace Kainos.Domino
                 host.Log("another digital mode took the receiver's audio: closing");
                 close();
             });
-            _menu = host.AddMenuItem("DominoEX / THOR", "DominoEX and THOR (the DominoEX / THOR module): open / close.", () => { if (_pane.IsOpen) close(); else open(); });
+            _menu = host.AddMenuItem("DominoEX / THOR (experimental)", "DominoEX and THOR (the DominoEX / THOR module): open / close. Experimental: not yet tested on the air.", () => { if (_pane.IsOpen) close(); else open(); });
             host.Log("DominoEX / THOR " + ModuleVersion + " started");
             if (host.GetSetting("open", "0") == "1") open();
         }

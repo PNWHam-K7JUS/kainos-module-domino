@@ -1,4 +1,4 @@
-# Builds the DominoEX / THOR module and packages it for Kainos (Setup > Modules > Install from file, or a GitHub release
+﻿# Builds the DominoEX / THOR module and packages it for Kainos (Setup > Modules > Install from file, or a GitHub release
 # listed in Kainos's modules.json).
 #
 #   .\build.ps1 [-KainosBin "<Kainos>\Project Files\bin\x64\Release\"] [-SkipTests]
@@ -51,7 +51,7 @@ try {
 $sha = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
 $size = (Get-Item $zip).Length
 $entry = [ordered]@{
-    id = $meta.id; name = $meta.name; description = $meta.description; version = $ver; api = $meta.api
+    id = $meta.id; name = $meta.name; description = $meta.description; experimental = [bool]$meta.experimental; version = $ver; api = $meta.api
     minKainos = $meta.minKainos; entry = $meta.entry; author = $meta.author; license = $meta.license; homepage = $meta.homepage
     url = "https://github.com/PNWHam-K7JUS/kainos-module-domino/releases/download/v$ver/kainos-domino-$ver.zip"
     sha256 = $sha; size = $size

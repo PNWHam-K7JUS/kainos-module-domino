@@ -35,7 +35,7 @@ namespace Kainos.Domino
         {
             string rec = Record(q, myCall, myGrid);
             bool fresh = !File.Exists(path);
-            File.AppendAllText(path, (fresh ? "Kainos DominoEX / THOR log\r\n<ADIF_VER:5>3.1.4 <PROGRAMID:10>Kainos DominoEX / THOR <EOH>\r\n" : "") + rec + "\r\n", Encoding.UTF8);
+            File.AppendAllText(path, (fresh ? "Kainos DominoEX / THOR log\r\n<ADIF_VER:5>3.1.4 <PROGRAMID:22>Kainos DominoEX / THOR <EOH>\r\n" : "") + rec + "\r\n", Encoding.UTF8);
             return rec;
         }
 
@@ -140,7 +140,7 @@ namespace Kainos.Domino
                 u32(3);                     // schema
                 u32(12);                    // Logged ADIF
                 utf8("Kainos DominoEX / THOR");        // the program's id
-                utf8("\n<adif_ver:5>3.1.0\n<programid:10>Kainos DominoEX / THOR\n<EOH>\n" + adifRecord);
+                utf8("\n<adif_ver:5>3.1.0\n<programid:22>Kainos DominoEX / THOR\n<EOH>\n" + adifRecord);
                 byte[] pkt = m.ToArray();
                 using (UdpClient c = new UdpClient()) c.Send(pkt, pkt.Length, hp[0], port);
                 return null;

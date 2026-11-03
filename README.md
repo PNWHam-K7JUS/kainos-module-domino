@@ -1,4 +1,6 @@
-# Kainos DominoEX / THOR
+﻿# Kainos DominoEX / THOR
+
+> **Experimental.** It passes its own self-test (sending to itself through noise), but it hasn't been tested on the air against fldigi yet. Reports are welcome on the Kainos GitHub.
 
 A Kainos module for **DominoEX** and **THOR** keyboard chat, timed and coded as fldigi does, so it works with fldigi
 and the other programs that have them.
