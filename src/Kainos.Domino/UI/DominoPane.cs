@@ -281,8 +281,13 @@ namespace Kainos.Domino.UI
 
         // ---- the timer: the waterfall, text, browser, markers and status ----
 
+        // false while the pane is closed: its timer keeps running, and without this it put the mode's marker back on
+        // the panadapter after closing had cleared it, so the marker stayed in every mode (GitHub #86)
+        public bool Showing;
+
         private void tick()
         {
+            if (!Showing) return;
             foreach (float[] line in _e.TakeLines()) _wf.AddLine(line, DominoEngine.BinHz);
             double rx = _e.RxFreq;
             _wf.RxHz = rx;
@@ -332,33 +337,57 @@ namespace Kainos.Domino.UI
 
         // ---- received text ----
 
+        // New text at the end. While the newest text is showing, the box follows it; scrolled up to read, it stays put
+        // (its scroll position and any selection are put back after the text goes in), and follows again once you
+        // scroll back to the bottom. Whether to follow is worked out here, from whether the end is showing now: the
+        // box's own scrolling as text goes in or the old text is trimmed doesn't count (as GitHub #75 for Olivia, and #64 for CW).
         private void append(string s, bool tx)
         {
             if (s.Length == 0) return;
-            bool follow = _rxAtBottom;
+            bool follow = atBottom() || _rxText.TextLength == 0;
             int selStart = _rxText.SelectionStart, selLen = _rxText.SelectionLength;
-            foreach (string part in Regex.Split(s, "(\b)"))
+            Point scroll = Point.Empty;
+            SendMessage(_rxText.Handle, EM_GETSCROLLPOS, IntPtr.Zero, ref scroll);
+            SendMessage(_rxText.Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
+            try
             {
-                if (part.Length == 0) continue;
-                if (part == "\b")
+                foreach (string part in Regex.Split(s, "(\b)"))
                 {
-                    if (_rxText.TextLength > 0) { _rxText.Select(_rxText.TextLength - 1, 1); _rxText.ReadOnly = false; _rxText.SelectedText = ""; _rxText.ReadOnly = true; }
-                    continue;
+                    if (part.Length == 0) continue;
+                    if (part == "\b")
+                    {
+                        if (_rxText.TextLength > 0) { _rxText.Select(_rxText.TextLength - 1, 1); _rxText.ReadOnly = false; _rxText.SelectedText = ""; _rxText.ReadOnly = true; }
+                        continue;
+                    }
+                    _rxText.Select(_rxText.TextLength, 0);
+                    _rxText.SelectionColor = tx ? _t.Tx : _t.Text;
+                    _rxText.AppendText(part);
                 }
-                _rxText.Select(_rxText.TextLength, 0);
-                _rxText.SelectionColor = tx ? _t.Tx : _t.Text;
-                _rxText.AppendText(part);
+                // the oldest third goes when it's long (only while following: not under someone reading back)
+                if (follow && _rxText.TextLength > 60000) { _rxText.Select(0, 20000); _rxText.ReadOnly = false; _rxText.SelectedText = ""; _rxText.ReadOnly = true; }
+                if (follow) _rxText.Select(_rxText.TextLength, 0);
+                else { _rxText.Select(selStart, selLen); SendMessage(_rxText.Handle, EM_SETSCROLLPOS, IntPtr.Zero, ref scroll); }
             }
-            if (_rxText.TextLength > 60000) { _rxText.Select(0, 20000); _rxText.ReadOnly = false; _rxText.SelectedText = ""; _rxText.ReadOnly = true; }
-            if (follow || selLen == 0) { _rxText.Select(_rxText.TextLength, 0); _rxText.ScrollToCaret(); }
-            else _rxText.Select(selStart, selLen);
+            finally
+            {
+                SendMessage(_rxText.Handle, WM_SETREDRAW, (IntPtr)1, IntPtr.Zero);
+                _rxText.Invalidate();
+            }
+            if (follow) _rxText.ScrollToCaret();
+            _rxAtBottom = follow;
         }
 
+        // the end of the text is in view (or within a line of it)
         private bool atBottom()
         {
+            if (_rxText.TextLength == 0) return true;
             Point p = _rxText.GetPositionFromCharIndex(_rxText.TextLength);
-            return p.Y < _rxText.ClientSize.Height + _t.S(20);
+            return p.Y < _rxText.ClientSize.Height + _rxText.Font.Height;
         }
+
+        private const int WM_SETREDRAW = 0x000B, EM_GETSCROLLPOS = 0x0400 + 221, EM_SETSCROLLPOS = 0x0400 + 222;
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, ref Point l);
 
         private static readonly Regex CallRx = new Regex(@"^(?=.*\d)(?=.*[A-Z])[A-Z0-9]{1,3}[0-9][A-Z0-9]{0,4}(/[A-Z0-9]{1,4})?$|^[A-Z0-9]{1,3}/[A-Z0-9]{3,8}$", RegexOptions.IgnoreCase);
 
